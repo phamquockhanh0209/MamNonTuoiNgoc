@@ -13,6 +13,7 @@
         rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <style>
         /* Inline critical CSS for faster initial render */
         body {
@@ -52,45 +53,35 @@
     </div>
     <div class="stars"></div>
 
-    <!-- Màn hình đăng nhập -->
+    <!-- Màn hình đăng nhập - giống hệt ảnh bạn gửi -->
     <div id="loginScreen" class="screen active">
-        <div class="login-card">
-            <div class="logo-mamnon">
-                <span class="corner-stars">✦</span>
-                <span class="corner-stars">✦</span>
-                <span class="corner-stars">✦</span>
-                <span class="corner-stars">✦</span>
-
-                <svg viewBox="0 0 600 120" class="curve-text" aria-hidden="true">
-                    <path id="curve" d="M100,100 Q300,0 500,100" fill="none" />
-                    <text fill="url(#rainbow)">
-                        <textPath href="#curve" startOffset="50%" text-anchor="middle" font-size="50" font-weight="700">
-                            TRƯỜNG MẦM NON
-                        </textPath>
-                    </text>
-                    <defs>
-                        <linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#ffe45c" />
-                            <stop offset="40%" stop-color="#ffcc00" />
-                            <stop offset="70%" stop-color="#ff8c00" />
-                            <stop offset="100%" stop-color="#ff3b3b" />
-                        </linearGradient>
-                    </defs>
-                </svg>
-
-                <h1>Tuổi Ngọc</h1>
-                <p>Điểm Danh Bé Yêu — An Tâm Mỗi Ngày</p>
+        <div class="welcome-card">
+            <!-- Phần trên: Logo + tên trường -->
+            <div class="top-section">
+                <div class="school-title">
+                    <span class="star-left">✦</span>
+                    TRƯỜNG MẦM NON
+                    <span class="star-right">✦</span>
+                </div>
+                <h1 class="school-name">Tuổi Ngọc</h1>
+                <p class="school-slogan">Nơi yêu thương bắt đầu từ những nụ cười</p>
             </div>
+
             <div class="input-group">
-                <input type="text" id="username" placeholder="Nhập tên của bạn" required autocomplete="username" />
-                <input type="password" id="password" placeholder="Nhập mật khẩu" required
-                    autocomplete="current-password" />
+                <input type="email" id="email" placeholder="Email của cô hoặc ba mẹ" required autocomplete="email" />
+                <input type="password" id="password" placeholder="Mật khẩu" required autocomplete="current-password" />
             </div>
 
             <div class="role-buttons">
-                <button class="btn-teacher" onclick="login('teacher')" type="button">Giáo viên</button>
-                <button class="btn-parent" onclick="login('parent')" type="button">Phụ huynh</button>
+                <button class="btn-login btn-teacher" onclick="login('teacher')">
+                    Tôi là Cô giáo
+                </button>
+                <button class="btn-login btn-parent" onclick="login('parent')">
+                    Tôi là Ba mẹ bé
+                </button>
             </div>
+
+            <div id="loginError" class="error-text"></div>
         </div>
     </div>
 
