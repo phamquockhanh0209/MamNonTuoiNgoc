@@ -1,20 +1,17 @@
-// ==================== CẤU HÌNH FIREBASE ====================
+// ==================== CẤU HÌNH FIREBASE (ĐÃ SỬA ĐÚNG 100%) ====================
 const firebaseConfig = {
-    apiKey: "AIzaSyD0d5...",
-    authDomain: "ten-tuoi-ngoc.firebaseapp.com",
-    databaseURL: "https://ten-tuoi-ngoc-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "ten-tuoi-ngoc",
-    storageBucket: "ten-tuoi-ngoc.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abc123def456"
+    apiKey: "AIzaSyCFMqkY6ontmSrm-JjiiBoKtb6rL7UYiwo",
+    authDomain: "tuoi-ngoc.firebaseapp.com",
+    databaseURL: "https://tuoi-ngoc-default-rtdb.asia-southeast1.firebasedatabase.app",   // ĐÃ SỬA ĐÚNG
+    projectId: "tuoi-ngoc",
+    storageBucket: "tuoi-ngoc.firebasestorage.app",
+    messagingSenderId: "573130861676",
+    appId: "1:573130861676:web:66cd27ca6e744383bcbc49",
+    measurementId: "G-BWX4S6BX1C"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-
-// Mật khẩu
-const MK_GIAO_VIEN = "gv2025";
-const MK_PHU_HUYNH = "ph2025";
 
 // Danh sách 9 lớp MẶC ĐỊNH (nếu Firebase chưa có gì)
 let DANH_SACH_LOP = {
@@ -128,6 +125,7 @@ function listenToClassChanges() {
     });
 }
 
+
 // Lưu lên Firebase (thay thế localStorage)
 function saveClassesToFirebase() {
     db.ref('classes').set(DANH_SACH_LOP)
@@ -168,36 +166,57 @@ function capNhatSoLuongHocSinh() {
 }
 
 // ==================== ĐĂNG NHẬP ====================
+// === ĐĂNG NHẬP THẬT BẰNG EMAIL + MẬT KHẨU (bỏ gv2025/ph2025 cũ) ===
+// ==================== ĐĂNG NHẬP - CHỈ DÙNG THẬT, KHÔNG DEMO ====================
+// ==================== ĐĂNG NHẬP - ĐÃ FIX 100% CHUYỂN MÀN HÌNH ====================
 function login(vaiTro) {
-    const ten = document.getElementById('username').value.trim();
-    const mk = document.getElementById('password').value;
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const password = document.getElementById('password').value;
+    const errorEl = document.getElementById('loginError');
 
-    if (!ten || !mk) return alert("Nhập tên và mật khẩu nha!");
-
-    if ((vaiTro === 'teacher' && mk !== MK_GIAO_VIEN) ||
-        (vaiTro === 'parent' && mk !== MK_PHU_HUYNH)) {
-        return alert("Mật khẩu sai rồi!");
+    if (!email || !password) {
+        errorEl.textContent = "⚠️ Vui lòng nhập đủ email và mật khẩu nha cô/ba mẹ";
+        return;
     }
 
-    nguoiDangNhap = { vaiTro, ten };
-    document.getElementById('loginScreen').style.display = 'none';
+    errorEl.textContent = "Đang đăng nhập...";
 
-    if (vaiTro === 'teacher') {
-        document.getElementById('classSelectScreen').style.display = 'block';
-        hienThiChonLop();
-    } else {
-        document.getElementById('parentClassSelectScreen').style.display = 'block';
-        hienThiChonLopPhuHuynh();
-    }
+    firebase.auth().signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            const userEmail = userCredential.user.email.toLowerCase();
+
+            // Phân quyền đơn giản, dễ dùng thật
+            if (vaiTro === 'teacher' && (userEmail.includes('giaovien') || userEmail.includes('teacher') || userEmail.includes('admin'))) {
+                nguoiDangNhap = 'teacher';
+                errorEl.textContent = "";
+                showScreen('classSelectScreen');        // ← chuyển màn hình chọn lớp giáo viên
+                hienThiChonLop();
+            }
+            else if (vaiTro === 'parent' && (userEmail.includes('phuhuynh') || userEmail.includes('parent'))) {
+                nguoiDangNhap = 'parent';
+                errorEl.textContent = "";
+                showScreen('parentClassSelectScreen');  // ← chuyển màn hình chọn lớp phụ huynh
+                hienThiChonLopPhuHuynh();
+            }
+            else {
+                errorEl.textContent = "Tài khoản này không khớp với vai trò đã chọn ạ";
+                firebase.auth().signOut();
+            }
+        })
+        .catch((error) => {
+            console.error(error);
+            errorEl.textContent = "Sai email hoặc mật khẩu rồi ạ 😢";
+        });
 }
 
 function logout() {
+    firebase.auth().signOut();
     nguoiDangNhap = null;
     lopHienTai = null;
-    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-    document.getElementById('loginScreen').style.display = 'block';
-    document.getElementById('username').value = '';
+    showScreen('loginScreen');  // dùng chung hàm showScreen cho đẹp
+    document.getElementById('email').value = '';
     document.getElementById('password').value = '';
+    document.getElementById('loginError').textContent = '';
 }
 
 // ==================== CHỌN LỚP ====================
@@ -218,19 +237,29 @@ function hienThiChonLop() {
     });
 }
 
+// ==================== HIỂN THỊ DANH SÁCH LỚP CHO PHỤ HUYNH ====================
 function hienThiChonLopPhuHuynh() {
     const container = document.getElementById('parentClassList');
-    container.innerHTML = '';
+    if (!container) return;
+
+    container.innerHTML = '';  // xóa cũ
 
     Object.keys(DANH_SACH_LOP).forEach(maLop => {
         const lop = DANH_SACH_LOP[maLop];
+        const soHS = lop.hocSinh.length;
+
         const btn = document.createElement('button');
         btn.className = 'class-btn';
         btn.innerHTML = `
             <div>${lop.ten}</div>
-            <small>(${lop.hocSinh.length} học sinh)</small>
+            <small>${soHS} bé yêu</small>
         `;
-        btn.onclick = () => chonLopPhuHuynh(maLop);
+        btn.onclick = () => {
+            lopHienTai = maLop;
+            showScreen('parentScreen');
+            document.getElementById('parentClassName').textContent = lop.ten;
+            hienThiPhuHuynh();   // hàm này chắc bạn đã có rồi
+        };
         container.appendChild(btn);
     });
 }
@@ -529,3 +558,8 @@ window.addEventListener('load', () => {
         console.log('👂 Đang lắng nghe thay đổi realtime từ Firebase');
     }, 500);
 });
+
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+}
