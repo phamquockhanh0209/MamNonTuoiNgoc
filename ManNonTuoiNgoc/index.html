@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta name="theme-color" content="#ff6b9d" />
+    <meta name="description" content="Hệ thống điểm danh học sinh trường mầm non Tuổi Ngọc" />
+    <title>Điểm Danh Bé Yêu - Trường Tuổi Ngọc</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Patrick+Hand&family=Comic+Neue:wght@700&display=swap"
+        rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        /* Inline critical CSS for faster initial render */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Prevent text resizing on orientation change */
+        html {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background slider -->
+    <div class="bg-slider">
+        <div class="bg-slide active" style="background-image: url('img/1.png')"></div>
+        <div class="bg-slide" style="background-image: url('img/2.png')"></div>
+        <div class="bg-slide" style="background-image: url('img/3.png')"></div>
+        <div class="bg-slide" style="background-image: url('img/4.png')"></div>
+        <div class="bg-slide" style="background-image: url('img/5.png')"></div>
+        <div class="bg-slide" style="background-image: url('img/6.png')"></div>
+        <div class="bg-slide" style="background-image: url('img/7.png')"></div>
+        <div class="bg-slide" style="background-image: url('img/8.png')"></div>
+        <div class="bg-slide" style="background-image: url('img/9.png')"></div>
+        <div class="bg-slide" style="background-image: url('img/10.png')"></div>
+    </div>
+    <div class="stars"></div>
+
+    <!-- Màn hình đăng nhập -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-card">
+            <div class="logo-mamnon">
+                <span class="corner-stars">✦</span>
+                <span class="corner-stars">✦</span>
+                <span class="corner-stars">✦</span>
+                <span class="corner-stars">✦</span>
+
+                <svg viewBox="0 0 600 120" class="curve-text" aria-hidden="true">
+                    <path id="curve" d="M100,100 Q300,0 500,100" fill="none" />
+                    <text fill="url(#rainbow)">
+                        <textPath href="#curve" startOffset="50%" text-anchor="middle" font-size="50" font-weight="700">
+                            TRƯỜNG MẦM NON
+                        </textPath>
+                    </text>
+                    <defs>
+                        <linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#ffe45c" />
+                            <stop offset="40%" stop-color="#ffcc00" />
+                            <stop offset="70%" stop-color="#ff8c00" />
+                            <stop offset="100%" stop-color="#ff3b3b" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+
+                <h1>Tuổi Ngọc</h1>
+                <p>Điểm Danh Bé Yêu — An Tâm Mỗi Ngày</p>
+            </div>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Nhập tên của bạn" required autocomplete="username" />
+                <input type="password" id="password" placeholder="Nhập mật khẩu" required
+                    autocomplete="current-password" />
+            </div>
+
+            <div class="role-buttons">
+                <button class="btn-teacher" onclick="login('teacher')" type="button">Giáo viên</button>
+                <button class="btn-parent" onclick="login('parent')" type="button">Phụ huynh</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Màn hình chọn lớp - GIÁO VIÊN -->
+    <div id="classSelectScreen" class="screen">
+        <h2 class="screen-text">Chọn lớp</h2>
+        <header class="header">
+            <button class="btn-logout" onclick="logout()" type="button">Đăng xuất</button>
+        </header>
+        <div id="classList" class="class-select-container"></div>
+    </div>
+
+    <!-- Màn hình chọn lớp - PHỤ HUYNH -->
+    <div id="parentClassSelectScreen" class="screen">
+        <h2 class="screen-text">Chọn lớp</h2>
+        <header class="header">
+            <button class="btn-logout" onclick="logout()" type="button">Đăng xuất</button>
+        </header>
+        <div id="parentClassList" class="class-select-container"></div>
+    </div>
+
+    <!-- Màn hình Giáo viên -->
+    <div id="teacherScreen" class="screen">
+        <header class="header">
+            <h2>Chào cô! Điểm danh lớp <span id="currentClassName" style="color:#ff6b9d;">...</span></h2>
+            <button class="btn-logout" onclick="logout()" type="button">Đăng xuất</button>
+            <button class="btn-logout" onclick="backToClassSelect()" style="background:#4fb1cd; margin-left:10px;"
+                type="button">Đổi lớp</button>
+        </header>
+        <div class="header-controls">
+            <div class="add-form">
+                <p style="text-align:center; font-size:20px; color:#ff6b9d; font-weight:bold; margin-bottom:20px;">
+                    ✨ Thêm Bé Yêu Vào Lớp Nào Cô Ơi ✨
+                </p>
+                <input id="newName" type="text" placeholder="Nhập tên bé yêu ở đây nha cô" autocomplete="off" />
+                <label for="newImgFile" class="custom-file-upload">
+                    Chọn ảnh bé từ điện thoại/máy tính
+                    <input type="file" id="newImgFile" accept="image/*" onchange="previewImage()" />
+                </label>
+                <div class="preview-container">
+                    <img id="previewImg" alt="Preview ảnh học sinh" />
+                </div>
+                <div style="text-align:center; margin:20px 0;">
+                    <button class="btn-add-sieu-dep" onclick="addStudent()" type="button">Thêm Bé Vào Lớp</button>
+                </div>
+                <div id="uploadStatus" style="text-align:center; margin-top:15px; font-weight:bold; min-height:24px;">
+                </div>
+            </div>
+        </div>
+        <div id="studentList" class="grid-container"></div>
+    </div>
+
+    <!-- Màn hình Phụ huynh -->
+    <div id="parentScreen" class="screen">
+        <header class="header">
+            <h2>Bé yêu lớp <span id="parentClassName" style="color:#ff6b9d;">...</span> hôm nay thế nào nè 💕</h2>
+            <button class="btn-logout" onclick="logout()" type="button">Đăng xuất</button>
+            <button class="btn-logout" onclick="backToParentClassSelect()" style="background:#5cb8dc; margin-left:10px;"
+                type="button">Đổi lớp</button>
+        </header>
+        <div id="parentList" class="grid-container"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
