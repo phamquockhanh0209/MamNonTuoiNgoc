@@ -372,7 +372,7 @@ function taoCard(be, container, prefix, coNut, maLop) {
 
 // ==================== ĐIỂM DANH ====================
 function danhDauVe(maLop, id, daVe) {
-    if (nguoiDangNhap?.vaiTro !== 'teacher') return;
+    if (nguoiDangNhap !== 'teacher') return;
 
     if (daVe) {
         const now = new Date();
@@ -563,3 +563,4 @@ function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
 }
+
