@@ -266,31 +266,27 @@ function hienThiChonLopPhuHuynh() {
 
 function chonLop(maLop) {
     lopHienTai = maLop;
-    document.getElementById('classSelectScreen').style.display = 'none';
-    document.getElementById('teacherScreen').style.display = 'block';
     document.getElementById('currentClassName').textContent = DANH_SACH_LOP[maLop].ten;
+    showScreen('teacherScreen'); // ✅ Chỉ dùng hàm showScreen
     hienThiGiaoVien();
 }
 
 function chonLopPhuHuynh(maLop) {
     lopHienTai = maLop;
-    document.getElementById('parentClassSelectScreen').style.display = 'none';
-    document.getElementById('parentScreen').style.display = 'block';
     document.getElementById('parentClassName').textContent = DANH_SACH_LOP[maLop].ten;
+    showScreen('parentScreen'); // ✅ Chỉ dùng hàm showScreen
     hienThiPhuHuynh();
 }
 
 function backToClassSelect() {
     lopHienTai = null;
-    document.getElementById('teacherScreen').style.display = 'none';
-    document.getElementById('classSelectScreen').style.display = 'block';
+    showScreen('classSelectScreen'); // ✅ Chỉ dùng hàm showScreen
     capNhatSoLuongHocSinh();
 }
 
 function backToParentClassSelect() {
     lopHienTai = null;
-    document.getElementById('parentScreen').style.display = 'none';
-    document.getElementById('parentClassSelectScreen').style.display = 'block';
+    showScreen('parentClassSelectScreen'); // ✅ Chỉ dùng hàm showScreen
     capNhatSoLuongHocSinh();
 }
 
@@ -563,4 +559,3 @@ function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
 }
-
