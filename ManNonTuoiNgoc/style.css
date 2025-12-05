@@ -73,6 +73,11 @@ textarea {
 /* Màn hình chung */
 .screen {
   display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100vh;
   padding: 15px;
   position: relative;
   z-index: 2;
