@@ -1,8 +1,8 @@
 // ==================== CẤU HÌNH FIREBASE (ĐÃ SỬA ĐÚNG 100%) ====================
 const firebaseConfig = {
-    apiKey: "AIzaSyCFMqkY6ontmSrm-JjiiBoKtb6rL7UYiwo",
+    apiKey: "AIxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     authDomain: "tuoi-ngoc.firebaseapp.com",
-    databaseURL: "https://tuoi-ngoc-default-rtdb.asia-southeast1.firebasedatabase.app",   // ĐÃ SỬA ĐÚNG
+    databaseURL: "https://tuoi-ngoc-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "tuoi-ngoc",
     storageBucket: "tuoi-ngoc.firebasestorage.app",
     messagingSenderId: "573130861676",
@@ -13,7 +13,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Danh sách 9 lớp MẶC ĐỊNH (nếu Firebase chưa có gì)
+// Danh sách 9 lớp MẶC ĐỊNH
 let DANH_SACH_LOP = {
     "lop1": {
         ten: "Lá 1",
@@ -75,7 +75,6 @@ let lopHienTai = null;
 let isLoadingFromFirebase = false;
 
 // ==================== ĐỒNG BỘ VỚI FIREBASE ====================
-// Load danh sách lớp từ Firebase khi khởi động
 function loadClassesFromFirebase() {
     isLoadingFromFirebase = true;
 
@@ -83,11 +82,9 @@ function loadClassesFromFirebase() {
         const data = snapshot.val();
 
         if (data) {
-            // Có dữ liệu trên Firebase rồi, dùng luôn
             DANH_SACH_LOP = data;
             console.log('✅ Đã tải danh sách lớp từ Firebase');
         } else {
-            // Chưa có gì, push dữ liệu mặc định lên
             db.ref('classes').set(DANH_SACH_LOP);
             console.log('📤 Đã khởi tạo danh sách lớp lên Firebase');
         }
@@ -96,17 +93,14 @@ function loadClassesFromFirebase() {
     });
 }
 
-// Lắng nghe thay đổi REALTIME từ Firebase
 function listenToClassChanges() {
     db.ref('classes').on('value', (snapshot) => {
-        // Bỏ qua lần đầu load
         if (isLoadingFromFirebase) return;
 
         const data = snapshot.val();
         if (data) {
             DANH_SACH_LOP = data;
 
-            // Cập nhật giao diện nếu đang ở màn hình tương ứng
             if (document.getElementById('classSelectScreen').style.display === 'block') {
                 hienThiChonLop();
             }
@@ -125,8 +119,6 @@ function listenToClassChanges() {
     });
 }
 
-
-// Lưu lên Firebase (thay thế localStorage)
 function saveClassesToFirebase() {
     db.ref('classes').set(DANH_SACH_LOP)
         .then(() => console.log('✅ Đã lưu thay đổi lên Firebase'))
@@ -166,9 +158,6 @@ function capNhatSoLuongHocSinh() {
 }
 
 // ==================== ĐĂNG NHẬP ====================
-// === ĐĂNG NHẬP THẬT BẰNG EMAIL + MẬT KHẨU (bỏ gv2025/ph2025 cũ) ===
-// ==================== ĐĂNG NHẬP - CHỈ DÙNG THẬT, KHÔNG DEMO ====================
-// ==================== ĐĂNG NHẬP - ĐÃ FIX 100% CHUYỂN MÀN HÌNH ====================
 function login(vaiTro) {
     const email = document.getElementById('email').value.trim().toLowerCase();
     const password = document.getElementById('password').value;
@@ -185,17 +174,16 @@ function login(vaiTro) {
         .then((userCredential) => {
             const userEmail = userCredential.user.email.toLowerCase();
 
-            // Phân quyền đơn giản, dễ dùng thật
             if (vaiTro === 'teacher' && (userEmail.includes('giaovien') || userEmail.includes('teacher') || userEmail.includes('admin'))) {
                 nguoiDangNhap = 'teacher';
                 errorEl.textContent = "";
-                showScreen('classSelectScreen');        // ← chuyển màn hình chọn lớp giáo viên
+                showScreen('classSelectScreen');
                 hienThiChonLop();
             }
             else if (vaiTro === 'parent' && (userEmail.includes('phuhuynh') || userEmail.includes('parent'))) {
                 nguoiDangNhap = 'parent';
                 errorEl.textContent = "";
-                showScreen('parentClassSelectScreen');  // ← chuyển màn hình chọn lớp phụ huynh
+                showScreen('parentClassSelectScreen');
                 hienThiChonLopPhuHuynh();
             }
             else {
@@ -213,7 +201,7 @@ function logout() {
     firebase.auth().signOut();
     nguoiDangNhap = null;
     lopHienTai = null;
-    showScreen('loginScreen');  // dùng chung hàm showScreen cho đẹp
+    showScreen('loginScreen');
     document.getElementById('email').value = '';
     document.getElementById('password').value = '';
     document.getElementById('loginError').textContent = '';
@@ -237,12 +225,11 @@ function hienThiChonLop() {
     });
 }
 
-// ==================== HIỂN THỊ DANH SÁCH LỚP CHO PHỤ HUYNH ====================
 function hienThiChonLopPhuHuynh() {
     const container = document.getElementById('parentClassList');
     if (!container) return;
 
-    container.innerHTML = '';  // xóa cũ
+    container.innerHTML = '';
 
     Object.keys(DANH_SACH_LOP).forEach(maLop => {
         const lop = DANH_SACH_LOP[maLop];
@@ -258,7 +245,7 @@ function hienThiChonLopPhuHuynh() {
             lopHienTai = maLop;
             showScreen('parentScreen');
             document.getElementById('parentClassName').textContent = lop.ten;
-            hienThiPhuHuynh();   // hàm này chắc bạn đã có rồi
+            hienThiPhuHuynh();
         };
         container.appendChild(btn);
     });
@@ -267,26 +254,26 @@ function hienThiChonLopPhuHuynh() {
 function chonLop(maLop) {
     lopHienTai = maLop;
     document.getElementById('currentClassName').textContent = DANH_SACH_LOP[maLop].ten;
-    showScreen('teacherScreen'); // ✅ Chỉ dùng hàm showScreen
+    showScreen('teacherScreen');
     hienThiGiaoVien();
 }
 
 function chonLopPhuHuynh(maLop) {
     lopHienTai = maLop;
     document.getElementById('parentClassName').textContent = DANH_SACH_LOP[maLop].ten;
-    showScreen('parentScreen'); // ✅ Chỉ dùng hàm showScreen
+    showScreen('parentScreen');
     hienThiPhuHuynh();
 }
 
 function backToClassSelect() {
     lopHienTai = null;
-    showScreen('classSelectScreen'); // ✅ Chỉ dùng hàm showScreen
+    showScreen('classSelectScreen');
     capNhatSoLuongHocSinh();
 }
 
 function backToParentClassSelect() {
     lopHienTai = null;
-    showScreen('parentClassSelectScreen'); // ✅ Chỉ dùng hàm showScreen
+    showScreen('parentClassSelectScreen');
     capNhatSoLuongHocSinh();
 }
 
@@ -333,8 +320,9 @@ function taoCard(be, container, prefix, coNut, maLop) {
     container.appendChild(card);
 
     const statusEl = document.getElementById(prefix + be.id);
+    const ngayHienTai = new Date().toISOString().slice(0, 10);
 
-    // Load từ localStorage (cache)
+    // ✅ 1. Load từ localStorage NGAY LẬP TỨC (cache)
     const localData = layTrangThaiDiemDanh(maLop, be.id);
     if (localData !== null) {
         if (localData.daVe) {
@@ -346,40 +334,90 @@ function taoCard(be, container, prefix, coNut, maLop) {
         }
     }
 
-    // Listen Firebase
-    try { db.ref(`diemdanh/${maLop}/${be.id}`).off(); } catch (e) { }
+    // ✅ 2. Lắng nghe Firebase để đồng bộ realtime
+    try { db.ref(`diemdanh/${maLop}/${be.id}/${ngayHienTai}`).off(); } catch (e) { }
 
-    db.ref(`diemdanh/${maLop}/${be.id}`).on('value', snap => {
+    db.ref(`diemdanh/${maLop}/${be.id}/${ngayHienTai}`).on('value', snap => {
         const data = snap.val();
-
-        if (data) {
-            luuTrangThaiDiemDanh(maLop, be.id, data.daVe, data.thoiGian || null);
-        }
 
         if (data?.daVe) {
             statusEl.textContent = `Đã về lúc ${data.thoiGian}`;
             statusEl.className = 'status home';
+            // Cập nhật lại localStorage
+            luuTrangThaiDiemDanh(maLop, be.id, true, data.thoiGian);
         } else {
             statusEl.textContent = 'Chưa về';
             statusEl.className = 'status not-home';
+            // Cập nhật lại localStorage
+            luuTrangThaiDiemDanh(maLop, be.id, false, null);
         }
     });
 }
 
-// ==================== ĐIỂM DANH ====================
+// ==================== ĐIỂM DANH - CẬP NHẬT NGAY LẬP TỨC ====================
 function danhDauVe(maLop, id, daVe) {
-    if (nguoiDangNhap !== 'teacher') return;
+    if (nguoiDangNhap !== 'teacher') {
+        console.log('❌ Không phải giáo viên, không thể điểm danh');
+        return;
+    }
 
+    const ngayHienTai = new Date().toISOString().slice(0, 10);
+    
+    // ✅ TÌM VÀ CẬP NHẬT UI NGAY LẬP TỨC
+    const statusEl = document.getElementById(`gv-${id}`);
+    
     if (daVe) {
         const now = new Date();
         const ngay = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
         const gio = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         const thoiGian = `${ngay} - ${gio}`;
-        db.ref(`diemdanh/${maLop}/${id}`).set({ daVe: true, thoiGian });
+        
+        // 1️⃣ Cập nhật UI ngay lập tức
+        if (statusEl) {
+            statusEl.textContent = `Đã về lúc ${thoiGian}`;
+            statusEl.className = 'status home';
+        }
+        
+        // 2️⃣ Lưu vào localStorage ngay
         luuTrangThaiDiemDanh(maLop, id, true, thoiGian);
+        
+        // 3️⃣ Lưu vào Firebase
+        db.ref(`diemdanh/${maLop}/${id}/${ngayHienTai}`).set({ 
+            daVe: true, 
+            thoiGian: thoiGian 
+        })
+        .then(() => {
+            console.log('✅ Đã lưu thành công vào Firebase!');
+        })
+        .catch((error) => {
+            console.error('❌ Lỗi khi lưu Firebase:', error);
+            // Nếu lỗi, rollback UI
+            if (statusEl) {
+                statusEl.textContent = 'Lỗi lưu dữ liệu';
+                statusEl.className = 'status not-home';
+            }
+        });
     } else {
-        db.ref(`diemdanh/${maLop}/${id}`).update({ daVe: false, thoiGian: null });
-        luuTrangThaiDiemDanh(maLop, id, false);
+        // 1️⃣ Cập nhật UI ngay lập tức
+        if (statusEl) {
+            statusEl.textContent = 'Chưa về';
+            statusEl.className = 'status not-home';
+        }
+        
+        // 2️⃣ Lưu vào localStorage ngay
+        luuTrangThaiDiemDanh(maLop, id, false, null);
+        
+        // 3️⃣ Lưu vào Firebase
+        db.ref(`diemdanh/${maLop}/${id}/${ngayHienTai}`).set({ 
+            daVe: false, 
+            thoiGian: null 
+        })
+        .then(() => {
+            console.log('✅ Đã reset trạng thái thành công!');
+        })
+        .catch((error) => {
+            console.error('❌ Lỗi khi reset Firebase:', error);
+        });
     }
 }
 
@@ -487,7 +525,33 @@ function editStudent(maLop, id) {
     hienThiGiaoVien();
 }
 
-// ==================== BACKGROUND ====================
+// ==================== LƯU & LẤY TRẠNG THÁI TỪ LOCALSTORAGE ====================
+function luuTrangThaiDiemDanh(maLop, id, daVe, thoiGian = null) {
+    try {
+        const ngay = new Date().toISOString().slice(0, 10);
+        const key = `diemdanh_${ngay}_${maLop}_${id}`;
+        const data = { daVe, thoiGian };
+        localStorage.setItem(key, JSON.stringify(data));
+        console.log('💾 Đã lưu vào localStorage:', key, data);
+    } catch (e) {
+        console.error('❌ Lỗi lưu localStorage:', e);
+    }
+}
+
+function layTrangThaiDiemDanh(maLop, id) {
+    try {
+        const ngay = new Date().toISOString().slice(0, 10);
+        const key = `diemdanh_${ngay}_${maLop}_${id}`;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+            console.log('📂 Đã tải từ localStorage:', key);
+        }
+        return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+        console.error('❌ Lỗi đọc localStorage:', e);
+        return null;
+    }
+}
 const bgSlides = document.querySelectorAll('.bg-slide');
 let currentBgIndex = 0;
 
@@ -501,45 +565,15 @@ window.addEventListener('load', () => {
     setInterval(showNextBackground, 5000);
 });
 
-// ==================== LƯU & LẤY TRẠNG THÁI ====================
-function luuTrangThaiDiemDanh(maLop, id, daVe, thoiGian = null) {
-    try {
-        const ngay = new Date().toISOString().slice(0, 10);
-        const key = `diemdanh_${ngay}_${maLop}_${id}`;
-        const data = { daVe, thoiGian };
-        localStorage.setItem(key, JSON.stringify(data));
-    } catch (e) { }
-}
-
-function layTrangThaiDiemDanh(maLop, id) {
-    try {
-        const ngay = new Date().toISOString().slice(0, 10);
-        const key = `diemdanh_${ngay}_${maLop}_${id}`;
-        const saved = localStorage.getItem(key);
-        return saved ? JSON.parse(saved) : null;
-    } catch (e) {
-        return null;
-    }
-}
-
 // ==================== TỰ ĐỘNG RESET NGÀY MỚI ====================
 (function autoResetNgayMoi() {
     const today = new Date().toISOString().slice(0, 10);
-    const lastReset = localStorage.getItem('lastResetDate_v2');
+    const lastReset = localStorage.getItem('lastResetDate_v3');
 
     if (lastReset !== today) {
-        Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('diemdanh_')) localStorage.removeItem(key);
-        });
-
-        Object.keys(DANH_SACH_LOP).forEach(maLop => {
-            DANH_SACH_LOP[maLop].hocSinh.forEach(be => {
-                db.ref(`diemdanh/${maLop}/${be.id}`).set({ daVe: false, thoiGian: null });
-            });
-        });
-
-        localStorage.setItem('lastResetDate_v2', today);
-        console.log('Đã reset điểm danh cho ngày mới:', today);
+        console.log('🔄 Chuyển sang ngày mới:', today);
+        localStorage.setItem('lastResetDate_v3', today);
+        console.log('✅ Hệ thống đã sẵn sàng cho ngày mới!');
     }
 })();
 
@@ -548,7 +582,6 @@ window.addEventListener('load', () => {
     console.log('🚀 Đang tải dữ liệu từ Firebase...');
     loadClassesFromFirebase();
 
-    // Đợi 500ms để Firebase load xong, rồi bắt đầu lắng nghe
     setTimeout(() => {
         listenToClassChanges();
         console.log('👂 Đang lắng nghe thay đổi realtime từ Firebase');
